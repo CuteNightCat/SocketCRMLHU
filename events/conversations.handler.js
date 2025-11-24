@@ -150,22 +150,71 @@ export function registerConversationEvents(io, socket) {
 
     // ===== Messages =====
     socket.on('msg:get', async (params, ack) => {
-        // console.log(params, ack);
-
         const { pageId, token, conversationId, customerId } = params || {};
         let { count } = params || {};
         count = Number.isFinite(Number(count)) ? Number(count) : 0;
         log.info('msg', socket.id, 'msg:get pageId=%s convo=%s customerId=%s count=%s', pageId, conversationId, customerId, count);
+        console.log('[conversations.handler] msg:get params:', { pageId, conversationId, customerId, count });
 
         if (!pageId || !token || !conversationId) {
             return typeof ack === 'function' && ack({ ok: false, error: 'missing pageId/token/conversationId' });
         }
         try {
-            const convoKey = extractConvoKey(conversationId);
+            // ✅ QUAN TRỌNG: Với COMMENT type, API Pancake cần conversationId đầy đủ
+            // Format COMMENT: "122182741466447740_25207220892271756" (postId_commentId)
+            // Format INBOX: "123456789" hoặc "pageId_123456789"
+            // 
+            // Logic đơn giản: Nếu conversationId có 2 phần và cả 2 đều là số dài -> COMMENT, giữ nguyên
+            // Nếu không -> INBOX, extract
+            let convoKey = conversationId;
+            const parts = String(conversationId).split('_');
+            
+            if (parts.length === 2) {
+                const [firstPart, secondPart] = parts;
+                // Nếu cả 2 phần đều là số và dài (>= 10 ký tự), có thể là COMMENT format
+                const isLongNumeric = (str) => /^\d+$/.test(str) && str.length >= 10;
+                
+                if (isLongNumeric(firstPart) && isLongNumeric(secondPart)) {
+                    // COMMENT format: postId_commentId, giữ nguyên
+                    convoKey = conversationId;
+                    console.log('[conversations.handler] ✅ COMMENT format detected, keeping full ID:', convoKey);
+                } else {
+                    // INBOX format: pageId_customerId, extract
+                    convoKey = extractConvoKey(conversationId);
+                    console.log('[conversations.handler] ✅ INBOX format detected, extracting to:', convoKey);
+                }
+            } else if (parts.length > 2) {
+                // Có nhiều phần (có thể là COMMENT với format đặc biệt), giữ nguyên
+                convoKey = conversationId;
+                console.log('[conversations.handler] ✅ Multiple parts, keeping full ID:', convoKey);
+            } else {
+                // Chỉ có 1 phần, extract
+                convoKey = extractConvoKey(conversationId);
+                console.log('[conversations.handler] ✅ Single part, extracting to:', convoKey);
+            }
+            
+            console.log('[conversations.handler] Processing conversationId:', {
+                original: conversationId,
+                final: convoKey,
+                parts: parts.length,
+                firstPart: parts[0],
+                secondPart: parts[1]
+            });
+            
             const items = await getMessages({ pageId, token, conversationId: convoKey, customerId, count });
+            console.log('[conversations.handler] getMessages returned:', {
+                itemsCount: Array.isArray(items) ? items.length : 0,
+                firstItem: Array.isArray(items) && items.length > 0 ? {
+                    id: items[0].id,
+                    type: items[0].type,
+                    message: items[0].message,
+                    original_message: items[0].original_message
+                } : null
+            });
             log.info('msg', socket.id, 'msg:get fetched=%d', Array.isArray(items) ? items.length : -1);
             return typeof ack === 'function' && ack({ ok: true, items });
         } catch (e) {
+            console.error('[conversations.handler] msg:get error:', e);
             log.error('msg', socket.id, 'msg:get error=%s', e?.message || e);
             return typeof ack === 'function' && ack({ ok: false, error: e.message });
         }

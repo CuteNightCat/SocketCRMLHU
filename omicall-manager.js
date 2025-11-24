@@ -46,24 +46,23 @@ class OMICallManager {
             }
         ];
         
-        // console.log('[OMICallManager] Initialized with config:', this.config);
+       
     }
 
     // Inject Socket.IO emitter for broadcasting
     setEmitter(io) {
         this.io = io;
-        // console.log('[OMICallManager] IO emitter attached');
+       
     }
 
     // initializeSDK kept for compatibility; server-API mode doesn't require it
     async initializeSDK() {
-        // console.log('[OMICallManager] initializeSDK() - server API mode, skipping');
+        
         this.isInitialized = true;
     }
 
     // Load real SDK (server-side)
     async loadRealSDK() {
-        // console.log('[OMICallManager] 📦 Attempting to load real SDK...');
         
         try {
             // In a real implementation, you would load the SDK here
