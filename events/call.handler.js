@@ -8,7 +8,7 @@ import { log } from '../utils/logger.js';
 import callManager from '../omicall-manager.js';
 
 export function registerCallEvents(io, socket) {
-    // console.log('[CallHandler] Registering call events for socket:', socket.id);
+    
     
     // New call flow: socket is coordination center
     socket.on('call:start', async ({ phoneNumber, customerId }) => {
@@ -46,7 +46,7 @@ export function registerCallEvents(io, socket) {
     
     // Cleanup when socket disconnects
     socket.on('disconnect', async () => {
-        // console.log('[CallHandler] Socket disconnected:', socket.id);
+        
         if (socket.data.callId) {
             try {
                 await callManager.endCall(socket.data.callId);

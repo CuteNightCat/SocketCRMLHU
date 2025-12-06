@@ -154,8 +154,7 @@ export function registerConversationEvents(io, socket) {
         let { count } = params || {};
         count = Number.isFinite(Number(count)) ? Number(count) : 0;
         log.info('msg', socket.id, 'msg:get pageId=%s convo=%s customerId=%s count=%s', pageId, conversationId, customerId, count);
-        console.log('[conversations.handler] msg:get params:', { pageId, conversationId, customerId, count });
-
+       
         if (!pageId || !token || !conversationId) {
             return typeof ack === 'function' && ack({ ok: false, error: 'missing pageId/token/conversationId' });
         }
@@ -177,40 +176,26 @@ export function registerConversationEvents(io, socket) {
                 if (isLongNumeric(firstPart) && isLongNumeric(secondPart)) {
                     // COMMENT format: postId_commentId, giữ nguyên
                     convoKey = conversationId;
-                    console.log('[conversations.handler] ✅ COMMENT format detected, keeping full ID:', convoKey);
+                    
                 } else {
                     // INBOX format: pageId_customerId, extract
                     convoKey = extractConvoKey(conversationId);
-                    console.log('[conversations.handler] ✅ INBOX format detected, extracting to:', convoKey);
+                   
                 }
             } else if (parts.length > 2) {
                 // Có nhiều phần (có thể là COMMENT với format đặc biệt), giữ nguyên
                 convoKey = conversationId;
-                console.log('[conversations.handler] ✅ Multiple parts, keeping full ID:', convoKey);
+               
             } else {
                 // Chỉ có 1 phần, extract
                 convoKey = extractConvoKey(conversationId);
-                console.log('[conversations.handler] ✅ Single part, extracting to:', convoKey);
+               
             }
             
-            console.log('[conversations.handler] Processing conversationId:', {
-                original: conversationId,
-                final: convoKey,
-                parts: parts.length,
-                firstPart: parts[0],
-                secondPart: parts[1]
-            });
+           
             
             const items = await getMessages({ pageId, token, conversationId: convoKey, customerId, count });
-            console.log('[conversations.handler] getMessages returned:', {
-                itemsCount: Array.isArray(items) ? items.length : 0,
-                firstItem: Array.isArray(items) && items.length > 0 ? {
-                    id: items[0].id,
-                    type: items[0].type,
-                    message: items[0].message,
-                    original_message: items[0].original_message
-                } : null
-            });
+            
             log.info('msg', socket.id, 'msg:get fetched=%d', Array.isArray(items) ? items.length : -1);
             return typeof ack === 'function' && ack({ ok: true, items });
         } catch (e) {

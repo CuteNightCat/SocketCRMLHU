@@ -84,44 +84,44 @@ export async function getConversationsSearch({ pageId, token, q }) {
 
 export async function getMessages({ pageId, conversationId, customerId, token, count }) {
     const url = buildMessagesURL({ pageId, conversationId, customerId, token, count });
-    console.log('[pancake.js] getMessages URL:', url);
-    console.log('[pancake.js] getMessages params:', { pageId, conversationId, customerId, count });
+    // console.log('[pancake.js] getMessages URL:', url);
+    // console.log('[pancake.js] getMessages params:', { pageId, conversationId, customerId, count });
     
     try {
         const data = await getJson(url);
-        console.log('[pancake.js] getMessages raw response type:', typeof data);
-        console.log('[pancake.js] getMessages response structure:', {
-            isArray: Array.isArray(data),
-            isObject: typeof data === 'object' && data !== null,
-            hasMessages: Array.isArray(data?.messages),
-            messagesCount: Array.isArray(data?.messages) ? data.messages.length : 0,
-            itemsCount: Array.isArray(data) ? data.length : 0,
-            rawDataKeys: Object.keys(data || {}),
-            success: data?.success,
-            hasConvFrom: !!data?.conv_from,
-            hasPost: !!data?.post
-        });
+        // console.log('[pancake.js] getMessages raw response type:', typeof data);
+        // console.log('[pancake.js] getMessages response structure:', {
+        //     isArray: Array.isArray(data),
+        //     isObject: typeof data === 'object' && data !== null,
+        //     hasMessages: Array.isArray(data?.messages),
+        //     messagesCount: Array.isArray(data?.messages) ? data.messages.length : 0,
+        //     itemsCount: Array.isArray(data) ? data.length : 0,
+        //     rawDataKeys: Object.keys(data || {}),
+        //     success: data?.success,
+        //     hasConvFrom: !!data?.conv_from,
+        //     hasPost: !!data?.post
+        // });
         
         // Log sample của messages nếu có
         if (Array.isArray(data?.messages) && data.messages.length > 0) {
-            console.log('[pancake.js] Sample message (first):', {
-                id: data.messages[0].id,
-                type: data.messages[0].type,
-                original_message: data.messages[0].original_message,
-                from: data.messages[0].from,
-                is_removed: data.messages[0].is_removed
-            });
+            // console.log('[pancake.js] Sample message (first):', {
+            //     id: data.messages[0].id,
+            //     type: data.messages[0].type,
+            //     original_message: data.messages[0].original_message,
+            //     from: data.messages[0].from,
+            //     is_removed: data.messages[0].is_removed
+            // });
         }
         
         // API có thể trả về array trực tiếp hoặc object có key 'messages'
         if (Array.isArray(data)) {
-            console.log('[pancake.js] ✅ Response is array, returning directly, count:', data.length);
+            // console.log('[pancake.js] ✅ Response is array, returning directly, count:', data.length);
             return data;
         }
         
         // Với COMMENT type, API trả về object có 'messages' array
         if (Array.isArray(data?.messages)) {
-            console.log('[pancake.js] ✅ Response has messages array, returning messages, count:', data.messages.length);
+            // console.log('[pancake.js] ✅ Response has messages array, returning messages, count:', data.messages.length);
             return data.messages;
         }
         
